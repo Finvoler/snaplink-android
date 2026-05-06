@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Rounded square "S" lettermark — bold, geometric, minimal -->
+    <!-- Outer white panel -->
+    <path
+        android:pathData="M30,38 Q30,28 40,28 L68,28 Q78,28 78,38 L78,70 Q78,80 68,80 L40,80 Q30,80 30,70 Z"
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.97"/>
+
+    <!-- Stylized "S" with two rounded arcs on the blue background -->
+    <!-- Top arc of S -->
+    <path
+        android:pathData="M48,44 C48,41.2 50.2,39 53,39 L59,39 C62.3,39 65,41.7 65,45 C65,48.3 62.3,51 59,51 L49,51 C45.7,51 43,53.7 43,57 C43,60.3 45.7,63 49,63 L55,63 C58.3,63 61,60.3 61,57"
+        android:strokeColor="#3D52A0"
+        android:strokeWidth="5.5"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Dot accent at bottom-right of S -->
+    <path
+        android:pathData="M62,67 m-3.2,0 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0"
+        android:fillColor="#5472D3"/>
+
+</vector>
