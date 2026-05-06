@@ -10,7 +10,8 @@ class ConfigStorage(context: Context) {
             accountId = preferences.getString(KEY_ACCOUNT_ID, "").orEmpty(),
             accessKeyId = preferences.getString(KEY_ACCESS_KEY_ID, "").orEmpty(),
             secretAccessKey = preferences.getString(KEY_SECRET_ACCESS_KEY, "").orEmpty(),
-            bucketName = preferences.getString(KEY_BUCKET_NAME, "").orEmpty()
+            bucketName = preferences.getString(KEY_BUCKET_NAME, "").orEmpty(),
+            publicBaseUrl = preferences.getString(KEY_PUBLIC_BASE_URL, "").orEmpty()
         )
     }
 
@@ -21,6 +22,7 @@ class ConfigStorage(context: Context) {
             .putString(KEY_ACCESS_KEY_ID, normalized.accessKeyId)
             .putString(KEY_SECRET_ACCESS_KEY, normalized.secretAccessKey)
             .putString(KEY_BUCKET_NAME, normalized.bucketName)
+                .putString(KEY_PUBLIC_BASE_URL, normalized.publicBaseUrl)
             .apply()
     }
 
@@ -30,5 +32,6 @@ class ConfigStorage(context: Context) {
         const val KEY_ACCESS_KEY_ID = "access_key_id"
         const val KEY_SECRET_ACCESS_KEY = "secret_access_key"
         const val KEY_BUCKET_NAME = "bucket_name"
+        const val KEY_PUBLIC_BASE_URL = "public_base_url"
     }
 }

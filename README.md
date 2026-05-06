@@ -1,3 +1,4 @@
+- 保存 Account ID、Access Key ID、Secret Access Key、Bucket 名称、公开访问域名
 # R2 Image Bed Android
 
 一个原生 Kotlin Android Studio 项目，用于把 Cloudflare R2 当作个人图床使用。
@@ -12,7 +13,10 @@
 - 文件列表缩略图按小尺寸懒加载，减少滚动时的图片解码压力
 - 点击复制完整直链，格式固定为：
 
-  `https://{bucket}.{accountId}.r2.dev/{文件夹路径}/{文件名}`
+- 直链格式：
+  `https://{公开访问域名}/{文件夹路径}/{文件名}`
+  例如 `https://pub-1789d365161d4e099c31faa3afa94e8d.r2.dev/四谎/IMG_20260506_150317.jpg`
+  配置时也可以直接粘贴一整条现成图片链接，应用会自动提取前面的域名根；不同文件夹会通过对象 key 自动追加到路径中。
 
 ## 打开方式
 

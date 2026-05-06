@@ -338,7 +338,9 @@ fun FilesScreen(viewModel: AppViewModel) {
             }
             items(viewModel.listing.objects, key = { it.key }) { item ->
                 val thumbnailUrl = remember(item.key, item.lastModified) { viewModel.thumbnailUrl(item) }
-                val publicUrl = remember(item.key) { viewModel.directLink(item) }
+                val publicUrl = remember(item.key, viewModel.config.publicBaseUrl, viewModel.config.bucketName, viewModel.config.accountId) {
+                    viewModel.directLink(item)
+                }
                 val isSelected = item.key in selectedKeys
                 FileRow(
                     item = item,

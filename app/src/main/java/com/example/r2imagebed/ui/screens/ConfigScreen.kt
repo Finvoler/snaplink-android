@@ -96,6 +96,13 @@ fun ConfigScreen(viewModel: AppViewModel) {
                     label = "Bucket 名称",
                     placeholder = "你的 R2 Bucket 名"
                 )
+                ConfigField(
+                    icon = Icons.Default.Info,
+                    value = viewModel.config.publicBaseUrl,
+                    onValueChange = viewModel::updatePublicBaseUrl,
+                    label = "公开访问域名",
+                    placeholder = "例如 https://pub-xxxx.r2.dev 或一整条图片链接"
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -134,7 +141,7 @@ fun ConfigScreen(viewModel: AppViewModel) {
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 Text(
-                    text = "分享直链格式：https://{bucket}.{accountId}.r2.dev/{路径}/{文件名}",
+                    text = "分享直链使用上方“公开访问域名”字段。可填写 R2 控制台显示的公开开发域名、自定义域名，甚至直接粘贴一整条图片链接，应用会自动提取域名根并为不同文件夹拼接正确路径。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )

@@ -118,6 +118,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         config = config.copy(bucketName = value)
     }
 
+    fun updatePublicBaseUrl(value: String) {
+        config = config.copy(publicBaseUrl = value)
+    }
+
     fun updateUploadFolderInput(value: String) {
         uploadFolderInput = value.replace('\\', '/')
     }

@@ -1,17 +1,41 @@
 package com.example.r2imagebed.data
 
+import android.net.Uri
+
 data class R2Config(
     val accountId: String = "",
     val accessKeyId: String = "",
     val secretAccessKey: String = "",
-    val bucketName: String = ""
+    val bucketName: String = "",
+    val publicBaseUrl: String = ""
 ) {
     fun normalized(): R2Config {
+        val normalizedPublicBaseUrl = publicBaseUrl
+            .trim()
+            .trimEnd('/')
+            .let { rawValue ->
+                when {
+                    rawValue.isBlank() -> ""
+                    rawValue.startsWith("http://") || rawValue.startsWith("https://") -> rawValue
+                    else -> "https://$rawValue"
+                }
+            }
+            .let { rawUrl ->
+                if (rawUrl.isBlank()) {
+                    ""
+                } else {
+                    val parsed = Uri.parse(rawUrl)
+                    val scheme = parsed.scheme ?: "https"
+                    val authority = parsed.authority.orEmpty()
+                    if (authority.isBlank()) "" else "$scheme://$authority"
+                }
+            }
         return copy(
             accountId = accountId.trim(),
             accessKeyId = accessKeyId.trim(),
             secretAccessKey = secretAccessKey.trim(),
-            bucketName = bucketName.trim()
+            bucketName = bucketName.trim(),
+            publicBaseUrl = normalizedPublicBaseUrl
         )
     }
 
@@ -25,7 +49,12 @@ data class R2Config(
 
     fun endpointHost(): String = "${normalized().accountId}.r2.cloudflarestorage.com"
 
-    fun publicBaseUrl(): String = "https://${normalized().bucketName}.${normalized().accountId}.r2.dev"
+    fun publicBaseUrl(): String {
+        val value = normalized()
+        return value.publicBaseUrl.ifBlank {
+            "https://${value.bucketName}.${value.accountId}.r2.dev"
+        }
+    }
 }
 
 data class R2Folder(
