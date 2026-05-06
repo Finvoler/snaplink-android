@@ -34,7 +34,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val storage = ConfigStorage(application)
     private val repository = R2Repository()
     private val thumbnailUrlCache = linkedMapOf<String, CachedThumbnailUrl>()
-    private val preloadedKeys = mutableSetOf<String>()
     private var globalPreloadJob: Job? = null
 
     private companion object {
@@ -425,7 +424,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun clearThumbnailUrlCache() {
         thumbnailUrlCache.clear()
-        preloadedKeys.clear()
         globalPreloadJob?.cancel()
         globalPreloadJob = null
     }
@@ -444,20 +442,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val context = getApplication<Application>()
         val imageLoader = context.imageLoader
         objects.forEach { obj ->
-            if (isImageKey(obj.key) && obj.key !in preloadedKeys) {
-                preloadedKeys.add(obj.key)
-                val url = try { thumbnailUrl(obj) } catch (e: Exception) { return@forEach }
-                val cacheKey = "${obj.key}|${obj.lastModified}"
-                imageLoader.enqueue(
-                    ImageRequest.Builder(context)
-                        .data(url)
-                        .diskCacheKey(cacheKey)
-                        .memoryCacheKey(cacheKey)
-                        .diskCachePolicy(CachePolicy.ENABLED)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                )
-            }
+            if (!isImageKey(obj.key)) return@forEach
+            val url = try { thumbnailUrl(obj) } catch (e: Exception) { return@forEach }
+            val cacheKey = "${obj.key}|${obj.lastModified}"
+            // Use the same size as FileRow's ImageRequest so memory cache key matches exactly.
+            // Without matching size, Coil's memory cache key differs and every display request
+            // falls back to disk/network even though preload already ran.
+            imageLoader.enqueue(
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .size(128, 128)
+                    .diskCacheKey(cacheKey)
+                    .memoryCacheKey(cacheKey)
+                    .diskCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
+            )
         }
     }
 
