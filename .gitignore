@@ -1,0 +1,15 @@
+*.iml
+.gradle/
+.idea/
+local.properties
+captures/
+build/
+app/build/
+
+# Android SDK / build tools downloaded locally
+android-sdk/
+.downloads/
+
+# Generated APKs
+*.apk
+*.aab
