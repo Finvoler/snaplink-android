@@ -38,6 +38,10 @@ class R2Repository {
         return R2S3Client(config.normalized()).presignGetUrl(key, expiresInSeconds)
     }
 
+    suspend fun moveObject(config: R2Config, sourceKey: String, targetKey: String) {
+        R2S3Client(config.normalized()).moveObject(sourceKey, targetKey)
+    }
+
     suspend fun deleteObject(config: R2Config, key: String) {
         R2S3Client(config.normalized()).deleteObject(key)
     }
