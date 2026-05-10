@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.CreateNewFolder
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
@@ -96,10 +97,27 @@ fun FilesScreen(viewModel: AppViewModel) {
     var isMultiSelectMode by remember { mutableStateOf(false) }
     val selectedKeys = remember { mutableStateListOf<String>() }
     var showBatchDeleteConfirm by remember { mutableStateOf(false) }
+    var showMoveFolderPicker by remember { mutableStateOf(false) }
 
     BackHandler(enabled = isMultiSelectMode) {
         isMultiSelectMode = false
         selectedKeys.clear()
+    }
+
+    if (showMoveFolderPicker) {
+        FolderPickerDialog(
+            initialFolder = viewModel.currentFolder,
+            allFolders = viewModel.folderSuggestions,
+            onSelect = { selectedFolder ->
+                val toMove = viewModel.listing.objects.filter { it.key in selectedKeys }
+                viewModel.moveObjects(toMove, selectedFolder)
+                selectedKeys.clear()
+                isMultiSelectMode = false
+                showMoveFolderPicker = false
+            },
+            onDismiss = { showMoveFolderPicker = false },
+            onCreateFolder = { path -> viewModel.createFolder(path) }
+        )
     }
 
     // Batch delete confirmation dialog
@@ -375,35 +393,63 @@ fun FilesScreen(viewModel: AppViewModel) {
             ) {
                 val allObjects = viewModel.listing.objects
                 val allSelected = allObjects.isNotEmpty() && allObjects.all { it.key in selectedKeys }
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 14.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "已选 ${selectedKeys.size} 项",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f)
-                    )
-                    TextButton(
-                        onClick = {
-                            if (allSelected) selectedKeys.clear()
-                            else { selectedKeys.clear(); selectedKeys.addAll(allObjects.map { it.key }) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "已选 ${selectedKeys.size} 项",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(
+                            onClick = {
+                                if (allSelected) selectedKeys.clear()
+                                else { selectedKeys.clear(); selectedKeys.addAll(allObjects.map { it.key }) }
+                            }
+                        ) {
+                            Text(if (allSelected) "取消全选" else "全选")
                         }
-                    ) {
-                        Text(if (allSelected) "取消全选" else "全选")
                     }
-                    Button(
-                        onClick = { if (selectedKeys.isNotEmpty()) showBatchDeleteConfirm = true },
-                        enabled = selectedKeys.isNotEmpty(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("删除 (${selectedKeys.size})")
+                        Button(
+                            onClick = {
+                                if (selectedKeys.isNotEmpty()) {
+                                    viewModel.refreshFolderSuggestions()
+                                    showMoveFolderPicker = true
+                                }
+                            },
+                            enabled = selectedKeys.isNotEmpty(),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.FolderOpen, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("移动")
+                        }
+                        Button(
+                            onClick = { if (selectedKeys.isNotEmpty()) showBatchDeleteConfirm = true },
+                            enabled = selectedKeys.isNotEmpty(),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("删除 (${selectedKeys.size})")
+                        }
                     }
                 }
             }

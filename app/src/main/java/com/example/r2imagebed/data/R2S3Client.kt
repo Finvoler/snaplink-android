@@ -102,6 +102,24 @@ class R2S3Client(
         buildPublicUrl(config, key)
     }
 
+    suspend fun moveObject(sourceKey: String, targetKey: String) = withContext(Dispatchers.IO) {
+        require(sourceKey.isNotBlank()) { "Source key cannot be empty." }
+        require(targetKey.isNotBlank()) { "Target key cannot be empty." }
+        if (sourceKey == targetKey) {
+            return@withContext
+        }
+
+        copyObject(sourceKey, targetKey)
+        executeRequest(
+            method = "DELETE",
+            canonicalPath = bucketObjectPath(sourceKey)
+        ).use { response ->
+            if (!response.isSuccessful) {
+                throw IOException(response.body?.string().orEmpty())
+            }
+        }
+    }
+
     fun presignGetUrl(key: String, expiresInSeconds: Int = 3600): String {
         val normalizedConfig = config.normalized()
         val timestamp = ZonedDateTime.now(ZoneOffset.UTC)
@@ -246,6 +264,18 @@ class R2S3Client(
 
     private fun putObject(key: String, bytes: ByteArray, contentType: String) {
         putObjectWithProgress(key, bytes, contentType) { _, _ -> }
+    }
+
+    private fun copyObject(sourceKey: String, targetKey: String) {
+        executeRequest(
+            method = "PUT",
+            canonicalPath = bucketObjectPath(targetKey),
+            extraHeaders = mapOf("x-amz-copy-source" to bucketObjectPath(sourceKey))
+        ).use { response ->
+            if (!response.isSuccessful) {
+                throw IOException(response.body?.string().orEmpty())
+            }
+        }
     }
 
     private fun putObjectWithProgress(

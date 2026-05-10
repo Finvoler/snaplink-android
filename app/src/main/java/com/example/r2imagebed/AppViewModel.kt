@@ -15,6 +15,7 @@ import com.example.r2imagebed.data.R2Config
 import com.example.r2imagebed.data.R2Folder
 import com.example.r2imagebed.data.R2Object
 import com.example.r2imagebed.data.R2Repository
+import com.example.r2imagebed.data.buildObjectKey
 import com.example.r2imagebed.data.buildPublicUrl
 import com.example.r2imagebed.data.guessMimeType
 import com.example.r2imagebed.data.normalizeFolderPath
@@ -367,6 +368,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
             bannerMessage = if (failCount == 0) "已删除 ${items.size} 个文件。"
                             else "删除完成，${failCount} 个文件失败。"
+            refreshFolderSuggestions()
+            refreshBucketUsage()
+            browseFolder(currentFolder)
+        }
+    }
+
+    fun moveObjects(items: List<R2Object>, targetFolder: String) {
+        if (items.isEmpty()) return
+        val normalized = validatedConfig() ?: return
+        val destinationFolder = normalizeFolderPath(targetFolder)
+        if (destinationFolder == currentFolder) {
+            bannerMessage = "请选择不同的目标目录。"
+            return
+        }
+
+        isLoadingListing = true
+        viewModelScope.launch {
+            var failCount = 0
+            var skippedCount = 0
+            withContext(Dispatchers.IO) {
+                items.forEach { item ->
+                    val targetKey = buildObjectKey(destinationFolder, item.name)
+                    if (targetKey == item.key) {
+                        skippedCount++
+                    } else {
+                        runCatching { repository.moveObject(normalized, item.key, targetKey) }
+                            .onFailure { failCount++ }
+                    }
+                }
+            }
+
+            val movedCount = items.size - failCount - skippedCount
+            val destinationLabel = if (destinationFolder.isBlank()) "根目录" else destinationFolder
+            bannerMessage = when {
+                skippedCount == items.size -> "请选择不同的目标目录。"
+                failCount == 0 -> "已移动 ${items.size} 个文件到 $destinationLabel。"
+                movedCount > 0 -> "移动完成，${movedCount} 个成功，${failCount} 个失败。"
+                else -> "移动失败，请稍后重试。"
+            }
             refreshFolderSuggestions()
             refreshBucketUsage()
             browseFolder(currentFolder)
