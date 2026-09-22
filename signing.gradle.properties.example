@@ -1,0 +1,7 @@
+# Add these entries to the user-level Gradle properties file
+# (~/.gradle/gradle.properties), or set variables with the same names in the
+# environment. Never copy real signing credentials into this repository.
+SNAPLINK_RELEASE_STORE_FILE=/absolute/path/to/your-release-key.jks
+SNAPLINK_RELEASE_STORE_PASSWORD=replace-me
+SNAPLINK_RELEASE_KEY_ALIAS=replace-me
+SNAPLINK_RELEASE_KEY_PASSWORD=replace-me
