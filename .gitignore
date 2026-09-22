@@ -13,3 +13,8 @@ android-sdk/
 # Generated APKs
 *.apk
 *.aab
+
+# Signing material must never be committed.
+*.keystore
+*.jks
+keystore.properties

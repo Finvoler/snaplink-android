@@ -3,6 +3,24 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+val releaseStoreFile = providers.gradleProperty("SNAPLINK_RELEASE_STORE_FILE")
+    .orElse(providers.environmentVariable("SNAPLINK_RELEASE_STORE_FILE"))
+    .orNull
+val releaseStorePassword = providers.gradleProperty("SNAPLINK_RELEASE_STORE_PASSWORD")
+    .orElse(providers.environmentVariable("SNAPLINK_RELEASE_STORE_PASSWORD"))
+    .orNull
+val releaseKeyAlias = providers.gradleProperty("SNAPLINK_RELEASE_KEY_ALIAS")
+    .orElse(providers.environmentVariable("SNAPLINK_RELEASE_KEY_ALIAS"))
+    .orNull
+val releaseKeyPassword = providers.gradleProperty("SNAPLINK_RELEASE_KEY_PASSWORD")
+    .orElse(providers.environmentVariable("SNAPLINK_RELEASE_KEY_PASSWORD"))
+    .orNull
+val hasReleaseSigning = listOf(
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.example.r2imagebed"
@@ -22,11 +40,13 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("SNAPLINK_RELEASE_STORE_FILE") ?: "missing-release-key.jks")
-            storePassword = System.getenv("SNAPLINK_RELEASE_STORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("SNAPLINK_RELEASE_KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("SNAPLINK_RELEASE_KEY_PASSWORD") ?: ""
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(requireNotNull(releaseStoreFile))
+                storePassword = requireNotNull(releaseStorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
         }
     }
 
@@ -38,7 +58,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
